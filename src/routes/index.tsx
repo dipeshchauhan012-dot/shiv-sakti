@@ -76,7 +76,8 @@ function Home() {
             </h1>
             <p className="mt-5 max-w-lg text-lg text-primary-foreground/85">{SITE.tagline}. Family dining, party orders, home delivery & banquet bookings — crafted with love in Surat.</p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link to="/order" className="btn-gold">Order Online</Link>
+              <Link to="/menu" className="btn-gold">View Menu</Link>
+              <Link to="/order" className="btn-outline-gold">Order Online</Link>
               <Link to="/reserve" className="btn-outline-gold">Reserve Table</Link>
               <a href={whatsappGeneric()} target="_blank" rel="noopener noreferrer" className="btn-outline-gold inline-flex items-center gap-2">
                 <MessageCircle className="h-4 w-4" /> WhatsApp Order
