@@ -315,12 +315,12 @@ function FeaturedGrid({ eyebrow, title, items, imageMap }: { eyebrow: string; ti
                   <span className="font-semibold text-primary whitespace-nowrap">₹{it.price}</span>
                 </div>
                 <p className="mt-2 text-sm text-muted-foreground line-clamp-2">Signature preparation, made fresh to order in our pure-veg kitchen.</p>
-                <div className="mt-4 flex gap-2">
+                <div className="mt-4 w-full">
                   {qty > 0 ? (
-                    <div className="flex items-center justify-between border border-secondary rounded-full h-11 flex-1 overflow-hidden bg-card">
+                    <div className="flex items-center justify-between border border-secondary rounded-full h-11 w-full overflow-hidden bg-card">
                       <button
                         onClick={() => setQty(it.id, qty - 1)}
-                        className="px-4 h-full hover:bg-secondary/10 text-primary font-bold transition-colors"
+                        className="px-6 h-full hover:bg-secondary/10 text-primary font-bold transition-colors"
                         aria-label="Decrease quantity"
                       >
                         -
@@ -328,7 +328,7 @@ function FeaturedGrid({ eyebrow, title, items, imageMap }: { eyebrow: string; ti
                       <span className="font-semibold text-primary">{qty}</span>
                       <button
                         onClick={() => setQty(it.id, qty + 1)}
-                        className="px-4 h-full hover:bg-secondary/10 text-primary font-bold transition-colors"
+                        className="px-6 h-full hover:bg-secondary/10 text-primary font-bold transition-colors"
                         aria-label="Increase quantity"
                       >
                         +
@@ -337,14 +337,11 @@ function FeaturedGrid({ eyebrow, title, items, imageMap }: { eyebrow: string; ti
                   ) : (
                     <button
                       onClick={() => { add({ id: it.id, name: it.name, price: it.price }); toast.success(`${it.name} added to cart`); }}
-                      className="btn-gold text-sm flex-1"
+                      className="btn-gold text-sm w-full"
                     >
                       Add to Cart
                     </button>
                   )}
-                  <a href={whatsappLink(whatsappItemMessage(it.name, it.price))} target="_blank" rel="noopener noreferrer" aria-label="Order on WhatsApp" className="grid h-11 w-11 place-items-center rounded-full border border-border hover:border-secondary text-[color:var(--whatsapp)] shrink-0">
-                    <MessageCircle className="h-4 w-4" />
-                  </a>
                 </div>
               </div>
             </div>
