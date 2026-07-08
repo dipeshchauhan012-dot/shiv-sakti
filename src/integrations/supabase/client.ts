@@ -32,7 +32,7 @@ function createSupabaseClient() {
     import.meta.env.VITE_SUPABASE_URL || 
     process.env.SUPABASE_URL ||
     (typeof globalThis !== 'undefined' ? (globalThis as any).SUPABASE_URL || (globalThis as any).VITE_SUPABASE_URL : undefined) ||
-    "https://c--fb65ebe5-c0f9-438e-9beb-6f5677d17dad-prod.lovable.cloud";
+    "https://hdvvnopmrinlbpmjijrl.supabase.co";
 
   const SUPABASE_PUBLISHABLE_KEY = 
     import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || 
