@@ -31,12 +31,14 @@ function createSupabaseClient() {
   const SUPABASE_URL = 
     import.meta.env.VITE_SUPABASE_URL || 
     process.env.SUPABASE_URL ||
-    (typeof globalThis !== 'undefined' ? (globalThis as any).SUPABASE_URL || (globalThis as any).VITE_SUPABASE_URL : undefined);
+    (typeof globalThis !== 'undefined' ? (globalThis as any).SUPABASE_URL || (globalThis as any).VITE_SUPABASE_URL : undefined) ||
+    "https://c--fb65ebe5-c0f9-438e-9beb-6f5677d17dad-prod.lovable.cloud";
 
   const SUPABASE_PUBLISHABLE_KEY = 
     import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || 
     process.env.SUPABASE_PUBLISHABLE_KEY ||
-    (typeof globalThis !== 'undefined' ? (globalThis as any).SUPABASE_PUBLISHABLE_KEY || (globalThis as any).VITE_SUPABASE_PUBLISHABLE_KEY : undefined);
+    (typeof globalThis !== 'undefined' ? (globalThis as any).SUPABASE_PUBLISHABLE_KEY || (globalThis as any).VITE_SUPABASE_PUBLISHABLE_KEY : undefined) ||
+    "sb_publishable_G7uf-EVptdwKfZJZzqU2sQ_7B3hHPH0";
 
   if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
     const missing = [
