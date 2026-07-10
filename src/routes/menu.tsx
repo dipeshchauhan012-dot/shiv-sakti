@@ -98,24 +98,26 @@ function MenuPage() {
                 const cartItem = cartItems.find((i) => i.id === it.id);
                 const qty = cartItem ? cartItem.qty : 0;
                 return (
-                  <div key={it.id} className={"rounded-xl border p-5 transition-all bg-card " + (it.is_available ? "border-border hover:border-secondary hover:shadow-[var(--shadow-elegant)]" : "border-border opacity-50")}>
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="inline-grid h-4 w-4 place-items-center border border-green-700 rounded-sm shrink-0"><span className="h-2 w-2 rounded-full bg-green-700" /></span>
-                          <h3 className="font-display text-lg leading-tight truncate flex-1 min-w-0">{it.name}</h3>
-                        </div>
-                        {(it.is_special || it.is_popular) && (
-                          <div className="flex flex-wrap gap-1.5 mt-1">
-                            {it.is_special && <span className="text-[9px] font-semibold bg-secondary/15 text-secondary px-1.5 py-0.5 rounded uppercase tracking-wider">Special</span>}
-                            {it.is_popular && <span className="text-[9px] font-semibold bg-primary/10 text-primary px-1.5 py-0.5 rounded uppercase tracking-wider">Popular</span>}
+                  <div key={it.id} className={"rounded-xl border p-4 md:p-5 transition-all bg-card flex flex-col justify-between h-full " + (it.is_available ? "border-border hover:border-secondary hover:shadow-[var(--shadow-elegant)]" : "border-border opacity-50")}>
+                    <div className="flex-1">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="inline-grid h-4 w-4 place-items-center border border-green-700 rounded-sm shrink-0"><span className="h-2 w-2 rounded-full bg-green-700" /></span>
+                            <h3 className="font-display text-base md:text-lg leading-tight truncate flex-1 min-w-0">{it.name}</h3>
                           </div>
-                        )}
-                        {it.description && <p className="mt-1.5 text-sm text-muted-foreground line-clamp-2">{it.description}</p>}
-                        {!it.is_available && <p className="mt-2 text-xs text-destructive uppercase tracking-widest font-semibold">Currently unavailable</p>}
-                      </div>
-                      <div className="text-right shrink-0">
-                        <div className="font-display text-xl text-primary whitespace-nowrap">{it.price > 0 ? `₹${it.price}` : "MRP"}</div>
+                          {(it.is_special || it.is_popular) && (
+                            <div className="flex flex-wrap gap-1.5 mt-1.5">
+                              {it.is_special && <span className="text-[8px] md:text-[9px] font-semibold bg-secondary/15 text-secondary px-1.5 py-0.5 rounded uppercase tracking-wider">Special</span>}
+                              {it.is_popular && <span className="text-[8px] md:text-[9px] font-semibold bg-primary/10 text-primary px-1.5 py-0.5 rounded uppercase tracking-wider">Popular</span>}
+                            </div>
+                          )}
+                          {it.description && <p className="mt-1.5 text-xs md:text-sm text-muted-foreground line-clamp-1 md:line-clamp-2">{it.description}</p>}
+                          {!it.is_available && <p className="mt-2 text-[10px] md:text-xs text-destructive uppercase tracking-widest font-semibold">Currently unavailable</p>}
+                        </div>
+                        <div className="text-right shrink-0">
+                          <div className="font-display text-lg md:text-xl text-primary whitespace-nowrap">{it.price > 0 ? `₹${it.price}` : "MRP"}</div>
+                        </div>
                       </div>
                     </div>
                     {it.is_available && it.price > 0 && (
