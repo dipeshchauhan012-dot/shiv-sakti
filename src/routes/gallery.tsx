@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { SITE } from "@/lib/site";
 import hero from "@/assets/hero-thali.jpg";
 import banquet from "@/assets/banquet-hall.jpg";
@@ -21,7 +23,7 @@ export const Route = createFileRoute("/gallery")({
   component: Gallery,
 });
 
-const shots: { src: string; alt: string; span?: string }[] = [
+const fallbackShots: { src: string; alt: string; span?: string }[] = [
   { src: hero, alt: "Signature pure veg thali", span: "md:col-span-2 md:row-span-2" },
   { src: dishPaneerButter, alt: "Paneer butter masala" },
   { src: interior, alt: "Family dining ambiance" },
@@ -32,6 +34,42 @@ const shots: { src: string; alt: string; span?: string }[] = [
 ];
 
 function Gallery() {
+  const [shots, setShots] = useState<{ src: string; alt: string; span?: string }[]>(fallbackShots);
+
+  useEffect(() => {
+    async function fetchPhotos() {
+      try {
+        const { data, error } = await supabase
+          .from("gallery")
+          .select("*")
+          .eq("is_active", true)
+          .order("sort_order");
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          const formatted = data.map((item) => {
+            // Setup mosaic span options based on sort_order
+            let span = undefined;
+            if (item.sort_order % 6 === 0) span = "md:col-span-2 md:row-span-2";
+            else if (item.sort_order % 4 === 0) span = "md:col-span-2";
+
+            return {
+              src: item.image_url,
+              alt: item.title || "Gallery photo",
+              span,
+            };
+          });
+          setShots(formatted);
+        }
+      } catch (err) {
+        console.error("Failed to load database gallery, using static assets fallback:", err);
+      }
+    }
+
+    fetchPhotos();
+  }, []);
+
   return (
     <>
       <section className="bg-primary text-primary-foreground py-16">
