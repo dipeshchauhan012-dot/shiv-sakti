@@ -63,17 +63,20 @@ function MenuPage() {
       </section>
 
       <div className="sticky top-16 md:top-20 z-30 bg-background/95 backdrop-blur border-b border-border">
-        <div className="container-x py-3 flex flex-col md:flex-row gap-3 items-stretch md:items-center">
-          <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/80" />
+        <div className="container-x py-4 flex flex-col gap-4">
+          {/* Large Center-Aligned Search Bar */}
+          <div className="relative w-full max-w-3xl mx-auto">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/80" />
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Search dishes…"
-              className="w-full h-11 pl-11 pr-4 rounded-full border border-border bg-card text-base text-foreground placeholder:text-muted-foreground/75 focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 font-medium"
+              placeholder="Search dishes (e.g. Paneer, Biryani, Manchurian)..."
+              className="w-full h-12 pl-12 pr-4 rounded-full border border-border bg-card text-base md:text-lg text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 font-medium shadow-sm transition-all"
             />
           </div>
-          <div className="flex gap-2 overflow-x-auto -mx-1 px-1 snap-x">
+          
+          {/* Categories row below */}
+          <div className="flex gap-2 overflow-x-auto justify-start md:justify-center py-1 -mx-4 px-4 md:-mx-0 md:px-0 snap-x scrollbar-none">
             <CatChip active={active === "all"} onClick={() => setActive("all")}>All</CatChip>
             {data.categories.map((c) => (
               <CatChip key={c.id} active={active === c.id} onClick={() => setActive(c.id)}>{c.name}</CatChip>
