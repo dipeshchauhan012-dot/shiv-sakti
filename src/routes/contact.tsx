@@ -1,11 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { z } from "zod";
-import { supabase } from "@/integrations/supabase/client";
 import { SITE, primaryPhoneTel } from "@/lib/site";
-import { whatsappGeneric, whatsappLink } from "@/lib/whatsapp";
+import { whatsappGeneric } from "@/lib/whatsapp";
 import { MapPin, Phone, Clock, MessageCircle, Instagram } from "lucide-react";
-import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 
 export const Route = createFileRoute("/contact")({
@@ -21,55 +17,14 @@ export const Route = createFileRoute("/contact")({
   component: Contact,
 });
 
-const schema = z.object({
-  name: z.string().trim().min(2, "Enter your full name").max(120),
-  phone: z.string().trim().regex(/^[0-9+\-\s]{7,20}$/, "Enter a valid phone"),
-  email: z.string().trim().email("Invalid email").max(255).optional().or(z.literal("")),
-  message: z.string().trim().min(2, "Message required").max(2000),
-});
-
 function Contact() {
-  const [submitting, setSubmitting] = useState(false);
-
-  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const fd = new FormData(e.currentTarget);
-    const parsed = schema.safeParse(Object.fromEntries(fd));
-    if (!parsed.success) {
-      toast.error(parsed.error.issues[0]?.message ?? "Please check the form");
-      return;
-    }
-    setSubmitting(true);
-
-    try {
-      await supabase.from("contact_leads").insert({
-        name: parsed.data.name,
-        phone: parsed.data.phone,
-        email: parsed.data.email || null,
-        message: parsed.data.message,
-      });
-    } catch (err) {
-      console.error("Silent contact DB log failed, continuing to WhatsApp:", err);
-    }
-
-    const text = `Hi Shiv Shakti, I'd like to get in touch.\n\nName: ${parsed.data.name}\nPhone: ${parsed.data.phone}${parsed.data.email ? `\nEmail: ${parsed.data.email}` : ""}\nMessage: ${parsed.data.message}`;
-    const waUrl = whatsappLink(text);
-
-    setSubmitting(false);
-    
-    // Auto-open WhatsApp
-    window.open(waUrl, "_blank", "noopener,noreferrer");
-    toast.success("Redirecting to WhatsApp to send message...");
-    (e.target as HTMLFormElement).reset();
-  }
-
   return (
     <>
       <Toaster position="top-center" richColors />
       <section className="bg-primary text-primary-foreground py-16">
         <div className="container-x text-center">
           <div className="text-secondary uppercase tracking-[0.2em] text-xs">Contact</div>
-          <h1 className="mt-3 font-display text-4xl md:text-6xl">We'd love to <span className="text-gradient-gold">hear from you</span></h1>
+          <h1 className="mt-3 font-display text-4xl md:text-6xl font-normal">We'd love to <span className="text-gradient-gold">hear from you</span></h1>
         </div>
       </section>
 
@@ -97,39 +52,26 @@ function Contact() {
           </div>
         </div>
 
-        <form onSubmit={onSubmit} className="card-premium p-6 space-y-4 reveal-right">
-          <h3 className="font-display text-2xl">Send us a message</h3>
-          <p className="text-sm text-muted-foreground">Questions, feedback, special requests — we reply within business hours.</p>
-          <Field label="Full name" name="name" required />
-          <Field label="Phone" name="phone" type="tel" required inputMode="tel" />
-          <Field label="Email (optional)" name="email" type="email" />
-          <Field label="Message" name="message" required textarea />
-          
-          <div className="pt-2">
-            <button
-              disabled={submitting}
-              className="w-full rounded-full py-3.5 text-base font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2 text-white bg-[#25D366] hover:bg-[#20ba5a] active:scale-[0.99] shadow-md cursor-pointer"
-            >
-              <MessageCircle className="h-5 w-5" />
-              {submitting ? "Redirecting to WhatsApp…" : "Send Message on WhatsApp"}
-            </button>
+        <div className="card-premium p-6 md:p-8 flex flex-col justify-center items-center text-center space-y-6 reveal-right">
+          <div className="grid h-16 w-16 place-items-center rounded-full bg-[#25D366]/10 text-[#25D366]">
+            <MessageCircle className="h-8 w-8" />
           </div>
-        </form>
+          <div>
+            <h3 className="font-display text-2xl md:text-3xl">Chat with us</h3>
+            <p className="mt-3 text-muted-foreground max-w-sm mx-auto text-sm md:text-base leading-relaxed">
+              Have questions about our menu, party orders, banquet booking, or feedback? Connect with our team directly on WhatsApp for fast, friendly support!
+            </p>
+          </div>
+          <a
+            href={whatsappGeneric()}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full max-w-sm rounded-full py-3.5 text-base font-semibold transition-all flex items-center justify-center gap-2 text-white bg-[#25D366] hover:bg-[#20ba5a] active:scale-[0.99] shadow-md cursor-pointer"
+          >
+            <MessageCircle className="h-5 w-5" /> Send Message on WhatsApp
+          </a>
+        </div>
       </section>
     </>
-  );
-}
-
-function Field({ label, name, type = "text", required, textarea, inputMode }: { label: string; name: string; type?: string; required?: boolean; textarea?: boolean; inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"] }) {
-  const cls = "w-full rounded-lg border border-border bg-background px-4 py-3 text-sm focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30";
-  return (
-    <label className="block">
-      <span className="text-xs uppercase tracking-widest text-muted-foreground">{label}{required && " *"}</span>
-      {textarea ? (
-        <textarea name={name} required={required} rows={4} className={cls + " mt-1"} />
-      ) : (
-        <input name={name} type={type} required={required} inputMode={inputMode} className={cls + " mt-1"} />
-      )}
-    </label>
   );
 }
