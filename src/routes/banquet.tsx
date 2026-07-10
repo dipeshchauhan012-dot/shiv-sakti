@@ -6,8 +6,9 @@ import { SITE } from "@/lib/site";
 import { whatsappLink } from "@/lib/whatsapp";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
-import { CheckCircle2, MessageCircle, PartyPopper } from "lucide-react";
+import { CheckCircle2, MessageCircle, PartyPopper, Phone } from "lucide-react";
 import banquet from "@/assets/banquet-hall.jpg";
+import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/banquet")({
   head: () => ({
@@ -43,30 +44,49 @@ function Banquet() {
     const parsed = schema.safeParse(Object.fromEntries(fd));
     if (!parsed.success) { toast.error(parsed.error.issues[0]?.message ?? "Please check the form"); return; }
     setSubmitting(true);
-    const { error } = await supabase.from("banquet_enquiries").insert({
-      name: parsed.data.name,
-      phone: parsed.data.phone,
-      event_date: parsed.data.event_date,
-      guest_count: parsed.data.guest_count,
-      event_type: parsed.data.event_type,
-      message: parsed.data.message || null,
-    });
+
+    try {
+      await supabase.from("banquet_enquiries").insert({
+        name: parsed.data.name,
+        phone: parsed.data.phone,
+        event_date: parsed.data.event_date,
+        guest_count: parsed.data.guest_count,
+        event_type: parsed.data.event_type,
+        message: parsed.data.message || null,
+      });
+    } catch (err) {
+      console.error("Silent banquet DB log failed, continuing to WhatsApp:", err);
+    }
+
+    const message = `Hi Shiv Shakti, I'd like to enquire about banquet hall booking.\n\nName: ${parsed.data.name}\nPhone: ${parsed.data.phone}\nEvent Type: ${parsed.data.event_type}\nDate: ${parsed.data.event_date}\nGuests: ${parsed.data.guest_count}${parsed.data.message ? `\nNotes: ${parsed.data.message}` : ""}`;
+    const waUrl = whatsappLink(message);
+
     setSubmitting(false);
-    if (error) { toast.error("Enquiry failed. Try WhatsApp instead."); return; }
     setDone({ name: parsed.data.name, date: parsed.data.event_date, guests: parsed.data.guest_count, type: parsed.data.event_type });
-    toast.success("Enquiry received!");
+    
+    // Auto-open WhatsApp
+    window.open(waUrl, "_blank", "noopener,noreferrer");
+    toast.success("Redirecting to WhatsApp to send enquiry...");
   }
 
   if (done) {
-    const wa = whatsappLink(`Hi Shiv Shakti, I've just sent a banquet enquiry.\nName: ${done.name}\nEvent: ${done.type}\nDate: ${done.date}\nGuests: ${done.guests}`);
     return (
       <>
         <Toaster />
         <section className="container-x py-24 text-center max-w-xl mx-auto">
-          <CheckCircle2 className="h-14 w-14 mx-auto text-[color:var(--whatsapp)]" />
-          <h1 className="mt-4 font-display text-4xl">Enquiry received</h1>
-          <p className="mt-3 text-muted-foreground">Thanks {done.name}! Our events team will reach out to plan your <b>{done.type}</b> for <b>{done.guests}</b> guests on <b>{done.date}</b>.</p>
-          <a href={wa} target="_blank" rel="noopener noreferrer" className="btn-gold mt-6 inline-flex items-center gap-2"><MessageCircle className="h-4 w-4" /> Chat on WhatsApp</a>
+          <CheckCircle2 className="h-16 w-16 mx-auto text-[color:var(--whatsapp)] animate-scale-in" />
+          <h1 className="mt-4 font-display text-4xl">Enquiry details sent</h1>
+          <p className="mt-3 text-muted-foreground">Thanks {done.name}! Your banquet enquiry has been sent via WhatsApp. Our events team will contact you shortly.</p>
+          <div className="mt-8 flex gap-3 justify-center flex-wrap">
+            <Link to="/menu" className="btn-gold px-8 py-3 rounded-full text-base font-semibold">Browse Menu</Link>
+            <a
+              href={`tel:+91${SITE.phones[0]}`}
+              className="btn-outline-gold inline-flex items-center gap-2 px-8 py-3 rounded-full text-base font-semibold"
+              style={{ color: "var(--primary)", borderColor: "var(--primary)" }}
+            >
+              <Phone className="h-5 w-5 text-secondary" /> Call Events Team
+            </a>
+          </div>
         </section>
       </>
     );
@@ -109,7 +129,7 @@ function Banquet() {
           </div>
         </div>
 
-        <form onSubmit={onSubmit} className="card-premium p-6 md:p-8 space-y-4 reveal-right">
+        <form onSubmit={onSubmit} className="card-premium p-6 md:p-8 space-y-5 reveal-right">
           <h3 className="font-display text-2xl">Send an enquiry</h3>
           <div className="grid md:grid-cols-2 gap-4">
             <Field label="Full name" name="name" required />
@@ -127,7 +147,23 @@ function Banquet() {
             </select>
           </label>
           <Field label="Message / requirements (optional)" name="message" textarea />
-          <button disabled={submitting} className="btn-gold w-full">{submitting ? "Sending…" : "Submit Enquiry"}</button>
+          
+          <div className="flex flex-col gap-3 pt-2">
+            <button
+              disabled={submitting}
+              className="w-full rounded-full py-3.5 text-base font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2 text-white bg-[#25D366] hover:bg-[#20ba5a] active:scale-[0.99] shadow-md cursor-pointer"
+            >
+              <MessageCircle className="h-5 w-5" />
+              {submitting ? "Redirecting to WhatsApp…" : "Send Enquiry on WhatsApp"}
+            </button>
+            
+            <a
+              href={`tel:+91${SITE.phones[0]}`}
+              className="w-full rounded-full py-3 text-sm font-semibold transition-all flex items-center justify-center gap-2 border border-border hover:border-secondary bg-card text-foreground"
+            >
+              <Phone className="h-4 w-4 text-secondary" /> Or Call Events Team: +91 {SITE.phones[0]}
+            </a>
+          </div>
         </form>
       </section>
     </>
