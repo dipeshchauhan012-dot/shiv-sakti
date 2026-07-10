@@ -7,7 +7,7 @@ import { SITE } from "@/lib/site";
 import { whatsappLink, whatsappOrderMessage } from "@/lib/whatsapp";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
-import { Minus, Plus, Trash2, MessageCircle, CheckCircle2, ShoppingBag } from "lucide-react";
+import { Minus, Plus, Trash2, MessageCircle, CheckCircle2, ShoppingBag, Star } from "lucide-react";
 
 export const Route = createFileRoute("/order")({
   head: () => ({
@@ -116,8 +116,17 @@ function OrderPage() {
           <CheckCircle2 className="h-16 w-16 mx-auto text-[color:var(--whatsapp)] animate-scale-in" />
           <h1 className="mt-4 font-display text-4xl">Thank you, {confirmed.name}!</h1>
           <p className="mt-3 text-muted-foreground">Your order has been sent to us on WhatsApp. Our team will contact you to confirm shortly.</p>
-          <div className="mt-8 flex justify-center">
+          <div className="mt-8 flex gap-3 justify-center flex-wrap">
             <Link to="/menu" className="btn-gold px-8 py-3 rounded-full text-base font-semibold">Order more dishes</Link>
+            <a
+              href={SITE.mapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-outline-gold inline-flex items-center gap-2 px-8 py-3 rounded-full text-base font-semibold"
+              style={{ color: "var(--primary)", borderColor: "var(--primary)" }}
+            >
+              <Star className="h-5 w-5 text-secondary fill-secondary animate-pulse" /> Review us on Google
+            </a>
           </div>
         </section>
       </>
