@@ -57,7 +57,7 @@ function MenuPage() {
       <section className="bg-primary text-primary-foreground py-16 md:py-20">
         <div className="container-x text-center">
           <div className="text-secondary uppercase tracking-[0.2em] text-xs">Our Menu</div>
-          <h1 className="mt-3 font-display text-4xl md:text-6xl">Pure Veg <span className="text-gradient-gold">à la Shiv Shakti</span></h1>
+          <h1 className="mt-3 font-display text-4xl md:text-6xl">Pure Veg Delicacies <span className="text-gradient-gold">by Shiv Shakti</span></h1>
           <p className="mt-4 text-primary-foreground/80 max-w-xl mx-auto">150+ dishes across Punjabi, Chinese, Paneer specials, tandoor, biryani, chaats & more — freshly prepared, generously served.</p>
         </div>
       </section>
