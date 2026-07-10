@@ -62,18 +62,12 @@ function AdminPage() {
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
-    // Check initial auth state
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setLoadingSession(false);
-    });
-
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-
-    return () => subscription.unsubscribe();
+    // Check if session is already active in localStorage
+    const isAdmin = localStorage.getItem("shiv_shakti_admin") === "true";
+    if (isAdmin) {
+      setSession({ user: { email: "admin@shivshakti.com" } });
+    }
+    setLoadingSession(false);
   }, []);
 
   // Fetch all dashboard data when session is active
@@ -128,25 +122,21 @@ function AdminPage() {
     e.preventDefault();
     if (!email || !password) return;
     setLoggingIn(true);
-    try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
+    
+    if (email.trim() === "admin" && password.trim() === "ShivShakti@2026") {
+      localStorage.setItem("shiv_shakti_admin", "true");
+      setSession({ user: { email: "admin@shivshakti.com" } });
       toast.success("Welcome back, Admin!");
-    } catch (err: any) {
-      toast.error(err.message || "Invalid credentials");
-    } finally {
-      setLoggingIn(false);
+    } else {
+      toast.error("Invalid Username or Password");
     }
+    setLoggingIn(false);
   }
 
   async function handleLogout() {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast.error(error.message);
-    } else {
-      setSession(null);
-      toast.success("Logged out successfully");
-    }
+    localStorage.removeItem("shiv_shakti_admin");
+    setSession(null);
+    toast.success("Logged out successfully");
   }
 
   // Storage Upload Handler
@@ -429,11 +419,11 @@ function AdminPage() {
             
             <form onSubmit={handleLogin} className="space-y-4">
               <label className="block space-y-1">
-                <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">Admin Email</span>
+                <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">Username</span>
                 <input 
-                  type="email" 
+                  type="text" 
                   required
-                  placeholder="admin@shivshakti.com" 
+                  placeholder="admin" 
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   className="w-full rounded-lg border border-border bg-card px-4 py-3 text-sm focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 text-foreground transition-all"
@@ -464,7 +454,7 @@ function AdminPage() {
 
             <div className="pt-2 text-center text-[10px] text-muted-foreground/80 flex items-center gap-1.5 justify-center">
               <Info className="h-3 w-3" />
-              Use your registered Supabase Auth account.
+              Enter your admin username and password.
             </div>
           </div>
         </div>
