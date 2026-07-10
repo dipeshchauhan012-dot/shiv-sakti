@@ -3,8 +3,8 @@ import { useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { SITE, primaryPhoneTel } from "@/lib/site";
-import { whatsappGeneric } from "@/lib/whatsapp";
-import { MapPin, Phone, Clock, MessageCircle, Send, Instagram } from "lucide-react";
+import { whatsappGeneric, whatsappLink } from "@/lib/whatsapp";
+import { MapPin, Phone, Clock, MessageCircle, Instagram } from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -40,15 +40,26 @@ function Contact() {
       return;
     }
     setSubmitting(true);
-    const { error } = await supabase.from("contact_leads").insert({
-      name: parsed.data.name,
-      phone: parsed.data.phone,
-      email: parsed.data.email || null,
-      message: parsed.data.message,
-    });
+
+    try {
+      await supabase.from("contact_leads").insert({
+        name: parsed.data.name,
+        phone: parsed.data.phone,
+        email: parsed.data.email || null,
+        message: parsed.data.message,
+      });
+    } catch (err) {
+      console.error("Silent contact DB log failed, continuing to WhatsApp:", err);
+    }
+
+    const text = `Hi Shiv Shakti, I'd like to get in touch.\n\nName: ${parsed.data.name}\nPhone: ${parsed.data.phone}${parsed.data.email ? `\nEmail: ${parsed.data.email}` : ""}\nMessage: ${parsed.data.message}`;
+    const waUrl = whatsappLink(text);
+
     setSubmitting(false);
-    if (error) { toast.error("Could not send. Please try again or WhatsApp us."); return; }
-    toast.success("Message sent! We'll get back to you shortly.");
+    
+    // Auto-open WhatsApp
+    window.open(waUrl, "_blank", "noopener,noreferrer");
+    toast.success("Redirecting to WhatsApp to send message...");
     (e.target as HTMLFormElement).reset();
   }
 
@@ -88,14 +99,21 @@ function Contact() {
 
         <form onSubmit={onSubmit} className="card-premium p-6 space-y-4 reveal-right">
           <h3 className="font-display text-2xl">Send us a message</h3>
-          <p className="text-sm text-muted-foreground">Questions, party enquiries, feedback — we reply within business hours.</p>
+          <p className="text-sm text-muted-foreground">Questions, feedback, special requests — we reply within business hours.</p>
           <Field label="Full name" name="name" required />
           <Field label="Phone" name="phone" type="tel" required inputMode="tel" />
           <Field label="Email (optional)" name="email" type="email" />
           <Field label="Message" name="message" required textarea />
-          <button disabled={submitting} className="btn-gold w-full inline-flex justify-center items-center gap-2 disabled:opacity-60">
-            <Send className="h-4 w-4" /> {submitting ? "Sending…" : "Send Message"}
-          </button>
+          
+          <div className="pt-2">
+            <button
+              disabled={submitting}
+              className="w-full rounded-full py-3.5 text-base font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2 text-white bg-[#25D366] hover:bg-[#20ba5a] active:scale-[0.99] shadow-md cursor-pointer"
+            >
+              <MessageCircle className="h-5 w-5" />
+              {submitting ? "Redirecting to WhatsApp…" : "Send Message on WhatsApp"}
+            </button>
+          </div>
         </form>
       </section>
     </>
