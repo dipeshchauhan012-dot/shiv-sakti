@@ -113,12 +113,11 @@ function OrderPage() {
       <>
         <Toaster />
         <section className="container-x py-24 text-center max-w-xl mx-auto">
-          <CheckCircle2 className="h-16 w-16 mx-auto text-[color:var(--whatsapp)]" />
+          <CheckCircle2 className="h-16 w-16 mx-auto text-[color:var(--whatsapp)] animate-scale-in" />
           <h1 className="mt-4 font-display text-4xl">Thank you, {confirmed.name}!</h1>
-          <p className="mt-2 text-muted-foreground">Your order details have been compiled. Please send the message on WhatsApp to confirm with our team.</p>
-          <div className="mt-6 flex gap-3 justify-center flex-wrap">
-            <a href={confirmed.whatsappUrl} target="_blank" rel="noopener noreferrer" className="btn-gold inline-flex items-center gap-2" style={{ backgroundColor: "#25D366", borderColor: "#25D366", color: "#fff" }}><MessageCircle className="h-4 w-4" /> Send on WhatsApp</a>
-            <Link to="/menu" className="btn-outline-gold text-primary" style={{ color: "var(--primary)", borderColor: "var(--primary)" }}>Order more</Link>
+          <p className="mt-3 text-muted-foreground">Your order has been sent to us on WhatsApp. Our team will contact you to confirm shortly.</p>
+          <div className="mt-8 flex justify-center">
+            <Link to="/menu" className="btn-gold px-8 py-3 rounded-full text-base font-semibold">Order more dishes</Link>
           </div>
         </section>
       </>
