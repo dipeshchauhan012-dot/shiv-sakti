@@ -47,37 +47,44 @@ function OrderPage() {
     if (parsed.data.order_type === "delivery" && !parsed.data.address) { toast.error("Delivery address required"); return; }
 
     setSubmitting(true);
-    // upsert customer
-    const { data: cust } = await supabase.from("customers").upsert({
-      name: parsed.data.name,
-      phone: parsed.data.phone,
-      address: parsed.data.address || null,
-      landmark: parsed.data.landmark || null,
-    }, { onConflict: "phone" }).select("id").maybeSingle();
+    let orderNumber: number | undefined;
 
-    const { data: order, error: orderErr } = await supabase.from("orders").insert({
-      customer_id: cust?.id ?? null,
-      customer_name: parsed.data.name,
-      customer_phone: parsed.data.phone,
-      order_type: parsed.data.order_type,
-      address: parsed.data.address || null,
-      landmark: parsed.data.landmark || null,
-      notes: parsed.data.notes || null,
-      subtotal,
-      total: subtotal,
-    }).select("id, order_number").single();
+    try {
+      // upsert customer
+      const { data: cust } = await supabase.from("customers").upsert({
+        name: parsed.data.name,
+        phone: parsed.data.phone,
+        address: parsed.data.address || null,
+        landmark: parsed.data.landmark || null,
+      }, { onConflict: "phone" }).select("id").maybeSingle();
 
-    if (orderErr || !order) { setSubmitting(false); toast.error("Order failed. Please try WhatsApp."); return; }
+      const { data: order, error: orderErr } = await supabase.from("orders").insert({
+        customer_id: cust?.id ?? null,
+        customer_name: parsed.data.name,
+        customer_phone: parsed.data.phone,
+        order_type: parsed.data.order_type,
+        address: parsed.data.address || null,
+        landmark: parsed.data.landmark || null,
+        notes: parsed.data.notes || null,
+        subtotal,
+        total: subtotal,
+      }).select("id, order_number").single();
 
-    const orderItems = items.map((i) => ({
-      order_id: order.id,
-      menu_item_id: i.id,
-      item_name: i.name,
-      unit_price: i.price,
-      quantity: i.qty,
-      line_total: i.price * i.qty,
-    }));
-    await supabase.from("order_items").insert(orderItems);
+      if (order && !orderErr) {
+        orderNumber = order.order_number;
+        const orderItems = items.map((i) => ({
+          order_id: order.id,
+          menu_item_id: i.id,
+          item_name: i.name,
+          unit_price: i.price,
+          quantity: i.qty,
+          line_total: i.price * i.qty,
+        }));
+        await supabase.from("order_items").insert(orderItems);
+      }
+    } catch (err) {
+      console.error("Silent DB logging failed, continuing to WhatsApp:", err);
+    }
 
     const msg = whatsappOrderMessage({
       name: parsed.data.name,
@@ -88,16 +95,17 @@ function OrderPage() {
       address: parsed.data.address,
       landmark: parsed.data.landmark,
       notes: parsed.data.notes,
-      orderNumber: order.order_number,
+      orderNumber,
     });
     const whatsappUrl = whatsappLink(msg);
 
     setSubmitting(false);
-    setConfirmed({ orderNumber: order.order_number, whatsappUrl, name: parsed.data.name });
+    setConfirmed({ orderNumber, whatsappUrl, name: parsed.data.name });
+    
     // Auto-open WhatsApp
     window.open(whatsappUrl, "_blank", "noopener,noreferrer");
     clear();
-    toast.success("Order placed! Sent to restaurant on WhatsApp.");
+    toast.success("Redirecting to WhatsApp to send order...");
   }
 
   if (confirmed) {
@@ -107,9 +115,9 @@ function OrderPage() {
         <section className="container-x py-24 text-center max-w-xl mx-auto">
           <CheckCircle2 className="h-16 w-16 mx-auto text-[color:var(--whatsapp)]" />
           <h1 className="mt-4 font-display text-4xl">Thank you, {confirmed.name}!</h1>
-          <p className="mt-2 text-muted-foreground">Order <b>#{confirmed.orderNumber}</b> has been placed. Our team will call you to confirm.</p>
+          <p className="mt-2 text-muted-foreground">Your order details have been compiled. Please send the message on WhatsApp to confirm with our team.</p>
           <div className="mt-6 flex gap-3 justify-center flex-wrap">
-            <a href={confirmed.whatsappUrl} target="_blank" rel="noopener noreferrer" className="btn-gold inline-flex items-center gap-2"><MessageCircle className="h-4 w-4" /> Open WhatsApp</a>
+            <a href={confirmed.whatsappUrl} target="_blank" rel="noopener noreferrer" className="btn-gold inline-flex items-center gap-2" style={{ backgroundColor: "#25D366", borderColor: "#25D366", color: "#fff" }}><MessageCircle className="h-4 w-4" /> Send on WhatsApp</a>
             <Link to="/menu" className="btn-outline-gold text-primary" style={{ color: "var(--primary)", borderColor: "var(--primary)" }}>Order more</Link>
           </div>
         </section>
@@ -159,15 +167,16 @@ function OrderPage() {
             )}
             <Field label="Order notes (optional)" name="notes" textarea />
 
-            <div className="rounded-lg border border-secondary/40 bg-secondary/10 p-4 text-sm text-primary">
-              <b>Review your cart on the right</b> — then confirm your order. Your order will also be sent to us on WhatsApp for fast confirmation.
+            <div className="rounded-lg border border-[#25D366]/40 bg-[#25D366]/5 p-4 text-sm text-foreground">
+              <b>Confirm your details</b> — clicking the button below will open WhatsApp on your phone/browser to send and confirm this order directly with us.
             </div>
 
             <button
               disabled={submitting || items.length === 0}
-              className="btn-gold w-full text-base disabled:opacity-50"
+              className="w-full rounded-full py-3.5 text-base font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2 text-white bg-[#25D366] hover:bg-[#20ba5a] active:scale-[0.99] shadow-md cursor-pointer"
             >
-              {submitting ? "Placing order…" : items.length === 0 ? "Cart is empty" : `Confirm Order · ₹${subtotal}`}
+              <MessageCircle className="h-5 w-5" />
+              {submitting ? "Redirecting to WhatsApp…" : items.length === 0 ? "Cart is empty" : `Confirm & Order on WhatsApp · ₹${subtotal}`}
             </button>
           </form>
         </div>
@@ -208,19 +217,6 @@ function OrderPage() {
                 <div className="flex justify-between text-sm"><span className="text-muted-foreground">Subtotal</span><span>₹{subtotal}</span></div>
                 <div className="flex justify-between text-base font-semibold font-display"><span>Total</span><span className="text-primary">₹{subtotal}</span></div>
               </div>
-              <a
-                href={whatsappLink(whatsappOrderMessage({
-                  name: "(fill on WhatsApp)",
-                  phone: "(fill on WhatsApp)",
-                  orderType,
-                  items: items.map((i) => ({ name: i.name, price: i.price, qty: i.qty })),
-                  total: subtotal,
-                }))}
-                target="_blank" rel="noopener noreferrer"
-                className="mt-4 w-full inline-flex justify-center items-center gap-2 rounded-full py-3 text-sm font-semibold text-[color:var(--whatsapp)] border border-[color:var(--whatsapp)] hover:bg-[color:var(--whatsapp)]/10"
-              >
-                <MessageCircle className="h-4 w-4" /> Order on WhatsApp instead
-              </a>
             </>
           )}
         </aside>
