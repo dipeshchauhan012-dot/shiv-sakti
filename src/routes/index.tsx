@@ -356,7 +356,7 @@ function FeaturedGrid({ eyebrow, title, items, imageMap }: { eyebrow: string; ti
 }
 
 function ItemStrip({ eyebrow, title, items, tone }: { eyebrow: string; title: string; items: { id: string; name: string; price: number }[]; tone?: "dark" }) {
-  const { add, setOpen } = useCart();
+  const { add, setOpen, items: cartItems, setQty } = useCart();
   const dark = tone === "dark";
   return (
     <section className={dark ? "bg-primary text-primary-foreground py-20" : "py-16"}>
@@ -369,20 +369,48 @@ function ItemStrip({ eyebrow, title, items, tone }: { eyebrow: string; title: st
           <Link to="/menu" className={dark ? "btn-outline-gold" : "btn-outline-gold text-primary"} style={dark ? undefined : { color: "var(--primary)", borderColor: "var(--primary)" }}>See all →</Link>
         </div>
         <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {items.map((it, idx) => (
-            <div key={it.id} className={"group rounded-xl p-5 border transition-all reveal " + (dark ? "border-secondary/25 bg-white/[0.04] hover:bg-white/[0.08]" : "border-border bg-card hover:border-secondary card-premium-hover")} data-delay={idx * 80}>
-              <div className="flex items-start justify-between gap-3">
-                <h4 className="font-display text-lg leading-tight">{it.name}</h4>
-                <span className={"font-semibold text-sm whitespace-nowrap " + (dark ? "text-secondary" : "text-primary")}>₹{it.price}</span>
+          {items.map((it, idx) => {
+            const cartItem = cartItems.find((i) => i.id === it.id);
+            const qty = cartItem ? cartItem.qty : 0;
+            return (
+              <div key={it.id} className={"group rounded-xl p-5 border transition-all flex flex-col justify-between reveal " + (dark ? "border-secondary/25 bg-white/[0.04] hover:bg-white/[0.08]" : "border-border bg-card hover:border-secondary card-premium-hover")} data-delay={idx * 80}>
+                <div>
+                  <div className="flex items-start justify-between gap-3">
+                    <h4 className="font-display text-lg leading-tight">{it.name}</h4>
+                    <span className={"font-semibold text-sm whitespace-nowrap " + (dark ? "text-secondary" : "text-primary")}>₹{it.price}</span>
+                  </div>
+                </div>
+                <div className="mt-4">
+                  {qty > 0 ? (
+                    <div className={"flex items-center justify-between border rounded-full h-8 w-full overflow-hidden bg-card " + (dark ? "border-secondary/60" : "border-secondary")}>
+                      <button
+                        onClick={() => setQty(it.id, qty - 1)}
+                        className="px-3 h-full hover:bg-secondary/10 text-primary font-bold transition-colors"
+                        aria-label="Decrease quantity"
+                      >
+                        -
+                      </button>
+                      <span className="font-semibold text-primary">{qty}</span>
+                      <button
+                        onClick={() => setQty(it.id, qty + 1)}
+                        className="px-3 h-full hover:bg-secondary/10 text-primary font-bold transition-colors"
+                        aria-label="Increase quantity"
+                      >
+                        +
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => { add({ id: it.id, name: it.name, price: it.price }); toast.success(`${it.name} added`); }}
+                      className={"text-xs font-medium " + (dark ? "text-secondary hover:text-secondary/80" : "text-primary hover:text-secondary")}
+                    >
+                      + Add to Cart
+                    </button>
+                  )}
+                </div>
               </div>
-              <button
-                onClick={() => { add({ id: it.id, name: it.name, price: it.price }); toast.success(`${it.name} added`); setOpen(true); }}
-                className={"mt-4 text-xs font-medium " + (dark ? "text-secondary hover:text-secondary/80" : "text-primary hover:text-secondary")}
-              >
-                + Add to Cart
-              </button>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>
